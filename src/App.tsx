@@ -10,6 +10,8 @@ import Home from './pages/Home';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import NotificationTrigger from './pages/NotificationTrigger';
+import DashboardLogin from './pages/dashboard/Login';
+import Dashboard from './pages/dashboard/Dashboard';
 import './App.css';
 
 // Create a theme instance
@@ -82,6 +84,8 @@ const AppContent: React.FC = () => {
       />
       {/* Public route for notification trigger - no authentication required */}
       <Route path="/trigger-notifications" element={<NotificationTrigger />} />
+      <Route path="/dashboard/login" element={<DashboardLogin />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

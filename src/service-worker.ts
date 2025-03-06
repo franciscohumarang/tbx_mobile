@@ -75,63 +75,92 @@ self.addEventListener('message', (event) => {
 
 // Push notification handling
 self.addEventListener('push', (event) => {
-  const data = event.data?.json() ?? {};
-  const title = data.title || 'TBX Medication Reminder';
-  const options = {
-    body: data.body || 'Time to take your medication!',
-    icon: '/logo192.png',
-    badge: '/logo192.png',
-    data: data.data || {},
-    actions: data.actions || [
-      {
-        action: 'confirm',
-        title: 'CONFIRM',
-      },
-      {
-        action: 'dismiss',
-        title: 'Dismiss',
-      },
-    ],
-  };
+  console.log('Push event received:', event);
+  
+  try {
+    const data = event.data?.json() ?? {};
+    console.log('Push data:', data);
+    
+    const title = data.title || 'TBX Medication Reminder';
+    const options = {
+      body: data.body || 'Time to take your medication!',
+      icon: '/logo192.png',
+      badge: '/logo192.png',
+      data: data.data || {},
+      actions: data.actions || [
+        {
+          action: 'confirm',
+          title: 'CONFIRM',
+        },
+        {
+          action: 'dismiss',
+          title: 'Dismiss',
+        },
+      ],
+    };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+    console.log('Showing notification with options:', options);
+    event.waitUntil(
+      self.registration.showNotification(title, options)
+        .then(() => console.log('Notification shown successfully'))
+        .catch(error => console.error('Error showing notification:', error))
+    );
+  } catch (error) {
+    console.error('Error in push event handler:', error);
+  }
 });
 
 // Handle notification click
 self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
+  console.log('Notification click event:', event);
+  
+  try {
+    event.notification.close();
 
-  if (event.action === 'confirm') {
-    // Handle confirm action
-    event.waitUntil(
-      self.clients.matchAll({ type: 'window' }).then((clientList) => {
-        // If a window client is available, navigate it to the confirm page
-        for (const client of clientList) {
-          if ('navigate' in client) {
-            client.navigate('/confirm-medication?id=' + event.notification.data.medicationId);
-            return;
+    if (event.action === 'confirm') {
+      // Handle confirm action
+      event.waitUntil(
+        self.clients.matchAll({ type: 'window' }).then((clientList) => {
+          console.log('Found clients:', clientList);
+          
+          // If a window client is available, navigate it to the confirm page
+          for (const client of clientList) {
+            if ('navigate' in client) {
+              console.log('Navigating existing client to confirm page');
+              client.navigate('/confirm-medication?id=' + event.notification.data.medicationId);
+              return;
+            }
           }
-        }
-        // If no window client is available, open a new window
-        if (self.clients.openWindow) {
-          return self.clients.openWindow('/confirm-medication?id=' + event.notification.data.medicationId);
-        }
-      })
-    );
-  } else {
-    // Handle regular click (not on an action button)
-    event.waitUntil(
-      self.clients.matchAll({ type: 'window' }).then((clientList) => {
-        for (const client of clientList) {
-          if ('navigate' in client && client.visibilityState === 'visible') {
-            client.navigate('/');
-            return;
+          
+          // If no window client is available, open a new window
+          if (self.clients.openWindow) {
+            console.log('Opening new window for confirm page');
+            return self.clients.openWindow('/confirm-medication?id=' + event.notification.data.medicationId);
           }
-        }
-        if (self.clients.openWindow) {
-          return self.clients.openWindow('/');
-        }
-      })
-    );
+        })
+      );
+    } else {
+      // Handle regular click (not on an action button)
+      event.waitUntil(
+        self.clients.matchAll({ type: 'window' }).then((clientList) => {
+          console.log('Found clients for regular click:', clientList);
+          
+          for (const client of clientList) {
+            if ('navigate' in client && client.visibilityState === 'visible') {
+              console.log('Navigating existing client to home page');
+              client.navigate('/');
+              return;
+            }
+          }
+          
+          if (self.clients.openWindow) {
+            console.log('Opening new window for home page');
+            return self.clients.openWindow('/');
+          }
+        })
+      );
+    }
+  } catch (error) {
+    console.error('Error in notification click handler:', error);
   }
 }); 

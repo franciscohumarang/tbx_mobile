@@ -11,14 +11,14 @@ export interface User {
 
 export interface Medication {
   id: string;
-  patientId: string;
   name: string;
   dosage: string;
-  schedule: string;
   time: string;
-  date: string;
-  status: 'pending' | 'confirmed' | 'missed';
+  frequency: string;
+  patientId: string;
+  status: 'empty' | 'pending' | 'confirmed' | 'missed';
   confirmationTime?: string;
+  date?: string;
 }
 
 export interface Notification {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Typography, 
   Box, 
@@ -69,6 +69,65 @@ const NotificationTrigger: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [sentNotifications, setSentNotifications] = useState<Set<string>>(new Set());
   const [successMessage, setSuccessMessage] = useState<string>('Notification sent successfully!');
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+
+  // Check notification permission and service worker registration on component mount
+  useEffect(() => {
+    const checkPermissionAndSW = async () => {
+      try {
+        console.log('Checking service worker and permissions...');
+        
+        // Check if service worker is supported
+        if (!('serviceWorker' in navigator)) {
+          console.error('Service Worker not supported');
+          setError('Service Worker is not supported in this browser');
+          return;
+        }
+
+        // Check notification permission
+        console.log('Checking notification permission...');
+        const permission = await Notification.requestPermission();
+        console.log('Notification permission:', permission);
+        setHasPermission(permission === 'granted');
+
+        if (permission !== 'granted') {
+          console.error('Notification permission not granted');
+          setError('Please enable notifications to use this feature');
+          return;
+        }
+
+        // Register service worker
+        console.log('Registering service worker...');
+        try {
+          const registration = await navigator.serviceWorker.register('/service-worker.js', {
+            scope: '/'
+          });
+          console.log('Service Worker registered:', registration);
+          
+          // Wait for the service worker to be ready
+          await navigator.serviceWorker.ready;
+          console.log('Service Worker is ready');
+          
+          // Check if service worker is active
+          if (!registration.active) {
+            console.error('Service Worker is not active');
+            setError('Service Worker is not active. Please refresh the page.');
+            return;
+          }
+          
+          console.log('Service Worker is ready and active');
+        } catch (swError) {
+          console.error('Service Worker registration failed:', swError);
+          // Don't set error state here, just log it since we can fall back to regular notifications
+        }
+      } catch (err: unknown) {
+        console.error('Error checking permissions:', err);
+        setError(`Failed to initialize notifications: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    };
+
+    checkPermissionAndSW();
+  }, []);
 
   // Filter medications by selected patient
   const filteredMedications = selectedPatient 
@@ -91,11 +150,20 @@ const NotificationTrigger: React.FC = () => {
     setNotificationType(event.target.value as 'reminder' | 'missed');
   };
 
-  const sendNotification = (patientId: string, medicationId: string, type: 'reminder' | 'missed', message?: string) => {
+  const sendNotification = async (patientId: string, medicationId: string, type: 'reminder' | 'missed', message?: string) => {
+    console.log('sendNotification called with:', { patientId, medicationId, type, message });
     try {
+      if (!hasPermission) {
+        console.log('No notification permission');
+        setError('Please enable notifications to use this feature');
+        return;
+      }
+
       const medication = medications.find(med => med.id === medicationId) as Medication;
+      console.log('Found medication:', medication);
       
       if (!medication) {
+        console.log('Medication not found');
         setError('Selected medication not found');
         return;
       }
@@ -109,71 +177,117 @@ const NotificationTrigger: React.FC = () => {
         ? `Time to take ${medication.name} (${medication.dosage})`
         : `Missed dose: ${medication.name} (${medication.dosage})`);
 
-      // Send notification to service worker
-      if ('serviceWorker' in navigator && 'PushManager' in window) {
-        // In a real app, this would be a call to a backend API
-        // For demo purposes, we're using the Notification API directly
-        
-        // First, check if we have permission
-        if (Notification.permission === 'granted') {
-          // Create and show the notification
-          const notificationOptions = {
-            body: notificationMessage,
-            icon: '/logo192.png',
-            badge: '/logo192.png',
-            data: { 
-              medicationId: medication.id,
-              patientId,
-              type
-            },
-            actions: type === 'reminder' ? [
-              {
-                action: 'confirm',
-                title: 'CONFIRM',
-              },
-              {
-                action: 'dismiss',
-                title: 'Dismiss',
-              },
-            ] : undefined,
-          };
+      console.log('Notification content:', { title, notificationMessage });
+
+      // Create notification options
+      const notificationOptions = {
+        body: notificationMessage,
+        icon: '/logo192.png',
+        badge: '/logo192.png',
+        data: { 
+          medicationId: medication.id,
+          patientId,
+          type
+        },
+        actions: type === 'reminder' ? [
+          {
+            action: 'confirm',
+            title: 'CONFIRM',
+          },
+          {
+            action: 'dismiss',
+            title: 'Dismiss',
+          },
+        ] : undefined,
+      };
+
+      // Try service worker first
+      if ('serviceWorker' in navigator) {
+        try {
+          console.log('Attempting to use service worker...');
+          const registration = await navigator.serviceWorker.ready;
+          console.log('Service Worker registration:', registration);
           
-          new Notification(title, notificationOptions);
-          setSuccess(true);
-          setError(null);
-          
-          // Add to sent notifications
-          setSentNotifications(prev => new Set(prev).add(medicationId));
-          
-          // Reset form after successful notification
-          if (type === 'reminder') {
-            setCustomMessage('');
+          if (!registration.active) {
+            console.log('Service Worker not active, falling back to regular Notification API');
+            throw new Error('Service Worker not active');
           }
-        } else {
-          setError('Notification permission not granted. Please enable notifications in your browser.');
+
+          console.log('Showing notification via service worker...');
+          await registration.showNotification(title, notificationOptions);
+          console.log('Notification shown via service worker');
+        } catch (swError: unknown) {
+          console.log('Service Worker failed, falling back to regular Notification API:', swError);
         }
-      } else {
-        setError('This browser does not support push notifications');
       }
-    } catch (err) {
-      setError('Failed to send notification');
-      console.error(err);
+
+      // Fallback to regular Notification API
+      try {
+        console.log('Attempting to use regular Notification API...');
+        const notification = new Notification(title, notificationOptions);
+        notification.onclick = () => {
+          window.focus();
+          window.location.href = `/confirm-medication?id=${medication.id}`;
+        };
+        console.log('Notification shown via regular API');
+      } catch (notificationError: unknown) {
+        console.error('Regular Notification API failed:', notificationError);
+        throw notificationError;
+      }
+      
+      // If we get here, notification was shown successfully
+      console.log('Notification shown successfully');
+      setSuccess(true);
+      setError(null);
+      
+      // Add to sent notifications
+      setSentNotifications(prev => new Set(prev).add(medicationId));
+      
+      // Reset form after successful notification
+      if (type === 'reminder') {
+        setCustomMessage('');
+      }
+    } catch (err: unknown) {
+      console.error('Failed to show notification:', err);
+      setError(`Failed to send notification: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 
-  const handleSendNotification = () => {
+  const handleSendNotification = async () => {
+    console.log('Send Notification button clicked');
     if (!selectedPatient || !selectedMedication) {
+      console.log('Missing patient or medication selection');
       setError('Please select both a patient and a medication');
       return;
     }
 
-    sendNotification(selectedPatient, selectedMedication, notificationType, customMessage);
-    setSuccessMessage('Notification sent successfully!');
+    try {
+      console.log('Starting notification process...');
+      console.log('Selected patient:', selectedPatient);
+      console.log('Selected medication:', selectedMedication);
+      console.log('Notification type:', notificationType);
+      console.log('Has permission:', hasPermission);
+      
+      await sendNotification(selectedPatient, selectedMedication, notificationType, customMessage);
+      console.log('Notification process completed successfully');
+      setSuccessMessage('Notification sent successfully!');
+    } catch (err: unknown) {
+      console.error('Error in handleSendNotification:', err);
+      setError(`Failed to send notification: ${err instanceof Error ? err.message : String(err)}`);
+    }
   };
 
-  const handleSampleNotification = (sample: typeof sampleMedications[0]) => {
-    sendNotification(sample.patientId, sample.medicationId, sample.type);
-    setSuccessMessage(`${sample.label} notification sent successfully!`);
+  const handleSampleNotification = async (sample: typeof sampleMedications[0]) => {
+    console.log('Sample notification clicked:', sample);
+    try {
+      console.log('Starting sample notification process...');
+      await sendNotification(sample.patientId, sample.medicationId, sample.type);
+      console.log('Sample notification process completed');
+      setSuccessMessage(`${sample.label} notification sent successfully!`);
+    } catch (err: unknown) {
+      console.error('Error in handleSampleNotification:', err);
+      setError(`Failed to send notification: ${err instanceof Error ? err.message : String(err)}`);
+    }
   };
 
   // Get medication details for display

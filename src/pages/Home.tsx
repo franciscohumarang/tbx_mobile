@@ -1,54 +1,80 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Typography, 
   Box, 
   Paper, 
   List, 
   ListItem, 
-  ListItemText, 
+ 
   Chip, 
   Button,
   Alert,
   Grid,
-  Card,
-  CardContent,
-  CardActions,
-  Avatar
+
+  Avatar,
+ 
+  Stack
 } from '@mui/material';
 import { 
   CheckCircle as CheckCircleIcon, 
-  Cancel as CancelIcon, 
+
   Pending as PendingIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  Error as ErrorIcon
 } from '@mui/icons-material';
 import Layout from '../components/Layout';
 import { useAuth } from '../contexts/AuthContext';
-import { useMedications } from '../contexts/MedicationContext';
+ 
 import { useNotifications } from '../contexts/NotificationContext';
 import { users } from '../data/mockData';
+import NotificationService, { NotificationState } from '../services/NotificationService';
 
 const Home: React.FC = () => {
   const { currentUser } = useAuth();
-  const { 
-    pendingMedications, 
-    confirmedMedications, 
-    missedMedications,
-    confirmMedication 
-  } = useMedications();
+  // We'll keep this for other functionality but not use it for rendering
+ 
   const { 
     requestNotificationPermission, 
     hasPermission
   } = useNotifications();
 
+  const [notificationState, setNotificationState] = useState<NotificationState>(() => {
+    const notificationService = NotificationService.getInstance();
+    return notificationService.getState();
+  });
+
+  // This effect runs once on component mount to set up notifications
   useEffect(() => {
     // Request notification permission when the component mounts
     if (hasPermission === null || hasPermission === false) {
       requestNotificationPermission();
     }
+    
+    // Get the notification service instance
+    const notificationService = NotificationService.getInstance();
+    
+    // Get initial state
+    setNotificationState(notificationService.getState());
+    
+    // Subscribe to state changes
+    const unsubscribe = notificationService.subscribe((state) => {
+      setNotificationState(state);
+    });
+    
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [hasPermission, requestNotificationPermission]);
 
   const handleConfirm = (id: string) => {
-    confirmMedication(id);
+    const notificationService = NotificationService.getInstance();
+    notificationService.handleMedicationConfirm(id);
+  };
+
+  const handleReset = () => {
+    const notificationService = NotificationService.getInstance();
+    notificationService.reset();
+    notificationService.startBackgroundNotifications();
   };
 
   // Get patients for caregivers and family members
@@ -67,9 +93,20 @@ const Home: React.FC = () => {
   return (
     <Layout title={`Welcome, ${currentUser?.name}`}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          Medication Dashboard
-        </Typography>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h5" gutterBottom>
+            Medication Dashboard
+          </Typography>
+          {currentUser?.role === 'patient' && (
+            <Button 
+              variant="outlined" 
+              color="primary" 
+              onClick={handleReset}
+            >
+              Reset Notifications
+            </Button>
+          )}
+        </Stack>
         <Typography variant="body1" color="text.secondary" paragraph>
           {currentUser?.role === 'patient' 
             ? 'Track your medication schedule and confirm your doses.' 
@@ -124,176 +161,159 @@ const Home: React.FC = () => {
         </Box>
       )}
 
-      <Grid container spacing={3}>
-        {/* Pending Medications */}
-        <Grid item xs={12}>
-          <Card variant="outlined">
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <PendingIcon color="warning" sx={{ mr: 1 }} />
-                <Typography variant="h6">
-                  Pending Medications
-                </Typography>
-              </Box>
-              
-              {pendingMedications.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No pending medications.
-                </Typography>
-              ) : (
-                <List>
-                  {pendingMedications.map((medication) => (
-                    <Paper 
-                      key={medication.id} 
-                      variant="outlined" 
-                      sx={{ mb: 2, p: 2 }}
-                    >
-                      <ListItem disablePadding>
-                        <ListItemText
-                          primary={
-                            <Typography variant="subtitle1">
-                              {medication.name} ({medication.dosage})
-                            </Typography>
-                          }
-                          secondary={
-                            <>
-                              <Typography variant="body2" component="span">
-                                {medication.schedule} at {medication.time}
-                              </Typography>
-                              <Chip 
-                                size="small" 
-                                label="Pending" 
-                                color="warning" 
-                                sx={{ ml: 1 }} 
-                              />
-                              {(currentUser?.role === 'caregiver' || currentUser?.role === 'family') && (
-                                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                                  Patient: {users.find(u => u.id === medication.patientId)?.name}
-                                </Typography>
-                              )}
-                            </>
-                          }
-                        />
-                      </ListItem>
-                      
-                      {currentUser?.role === 'patient' && (
-                        <CardActions sx={{ justifyContent: 'flex-start', mt: 1 }}>
-                          <Button 
-                            variant="contained" 
-                            color="primary" 
-                            size="small"
-                            onClick={() => handleConfirm(medication.id)}
-                          >
-                            CONFIRM
-                          </Button>
-                        </CardActions>
-                      )}
-                    </Paper>
-                  ))}
-                </List>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
+      {/* Pending Medications */}
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <PendingIcon color="warning" />
+          Pending Medications
+        </Typography>
+        {notificationState.pendingMedications.length > 0 ? (
+          <Box sx={{ mb: 4 }}>
+            {notificationState.pendingMedications.map((medication, index) => (
+              <Paper 
+                key={`pending-${medication.id}`} 
+                sx={{ 
+                  p: 2, 
+                  mb: 2,
+                  borderRadius: 2,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}
+              >
+                <Stack spacing={1}>
+                  <Typography variant="h6" component="div">
+                    {medication.name} ({medication.dosage})
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Daily at {medication.time}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Chip 
+                      label="Pending" 
+                      color="warning" 
+                      size="small"
+                      sx={{ borderRadius: 1 }}
+                    />
+                    {currentUser?.role === 'patient' && (
+                      <Button
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        onClick={() => handleConfirm(medication.id)}
+                        sx={{ 
+                          borderRadius: 1,
+                          textTransform: 'uppercase',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Confirm
+                      </Button>
+                    )}
+                  </Box>
+                </Stack>
+              </Paper>
+            ))}
+          </Box>
+        ) : (
+          <Box sx={{ py: 4, textAlign: 'center' }}>
+            <Typography variant="body1" color="text.secondary">
+              No pending medications
+            </Typography>
+          </Box>
+        )}
+      </Paper>
 
+      <Grid container spacing={3}>
         {/* Confirmed Medications */}
         <Grid item xs={12} md={6}>
-          <Card variant="outlined">
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <CheckCircleIcon color="success" sx={{ mr: 1 }} />
-                <Typography variant="h6">
-                  Confirmed Medications
+          <Paper sx={{ p: 3, height: '100%' }}>
+            <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CheckCircleIcon color="success" />
+              Confirmed Medications
+            </Typography>
+            {notificationState.confirmedMedications.length > 0 ? (
+              <List>
+                {notificationState.confirmedMedications.map((medication) => (
+                  <ListItem 
+                    key={`confirmed-${medication.id}`}
+                    sx={{ 
+                      px: 0,
+                      borderBottom: '1px solid rgba(0,0,0,0.08)',
+                      '&:last-child': { borderBottom: 'none' }
+                    }}
+                  >
+                    <Stack spacing={0.5} width="100%">
+                      <Typography variant="subtitle1">
+                        {medication.name} ({medication.dosage})
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Daily at {medication.time}
+                      </Typography>
+                      <Typography variant="body2" color="success.main">
+                        Confirmed at {medication.confirmationTime}
+                      </Typography>
+                    </Stack>
+                    <Chip 
+                      label="Confirmed" 
+                      color="success" 
+                      size="small" 
+                      sx={{ ml: 2, borderRadius: 1 }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Box sx={{ py: 4, textAlign: 'center' }}>
+                <Typography variant="body1" color="text.secondary">
+                  No confirmed medications
                 </Typography>
               </Box>
-              
-              {confirmedMedications.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No confirmed medications.
-                </Typography>
-              ) : (
-                <List>
-                  {confirmedMedications.slice(0, 3).map((medication) => (
-                    <ListItem key={medication.id} divider>
-                      <ListItemText
-                        primary={`${medication.name} (${medication.dosage})`}
-                        secondary={
-                          <>
-                            <Typography variant="body2" component="span">
-                              {medication.schedule} at {medication.time}
-                            </Typography>
-                            <br />
-                            <Typography variant="caption" color="text.secondary">
-                              Confirmed at {medication.confirmationTime}
-                            </Typography>
-                            {(currentUser?.role === 'caregiver' || currentUser?.role === 'family') && (
-                              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                                Patient: {users.find(u => u.id === medication.patientId)?.name}
-                              </Typography>
-                            )}
-                          </>
-                        }
-                      />
-                      <Chip 
-                        size="small" 
-                        label="Confirmed" 
-                        color="success" 
-                        icon={<CheckCircleIcon />} 
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
-            </CardContent>
-          </Card>
+            )}
+          </Paper>
         </Grid>
 
         {/* Missed Medications */}
         <Grid item xs={12} md={6}>
-          <Card variant="outlined">
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <CancelIcon color="error" sx={{ mr: 1 }} />
-                <Typography variant="h6">
-                  Missed Medications
+          <Paper sx={{ p: 3, height: '100%' }}>
+            <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ErrorIcon color="error" />
+              Missed Medications
+            </Typography>
+            {notificationState.missedMedications.length > 0 ? (
+              <List>
+                {notificationState.missedMedications.map((medication) => (
+                  <ListItem 
+                    key={`missed-${medication.id}`}
+                    sx={{ 
+                      px: 0,
+                      borderBottom: '1px solid rgba(0,0,0,0.08)',
+                      '&:last-child': { borderBottom: 'none' }
+                    }}
+                  >
+                    <Stack spacing={0.5} width="100%">
+                      <Typography variant="subtitle1">
+                        {medication.name} ({medication.dosage})
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Daily at {medication.time} on {medication.date}
+                      </Typography>
+                    </Stack>
+                    <Chip 
+                      label="Missed" 
+                      color="error" 
+                      size="small" 
+                      sx={{ ml: 2, borderRadius: 1 }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Box sx={{ py: 4, textAlign: 'center' }}>
+                <Typography variant="body1" color="text.secondary">
+                  No missed medications
                 </Typography>
               </Box>
-              
-              {missedMedications.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No missed medications.
-                </Typography>
-              ) : (
-                <List>
-                  {missedMedications.map((medication) => (
-                    <ListItem key={medication.id} divider>
-                      <ListItemText
-                        primary={`${medication.name} (${medication.dosage})`}
-                        secondary={
-                          <>
-                            <Typography variant="body2" component="span">
-                              {medication.schedule} at {medication.time} on {medication.date}
-                            </Typography>
-                            {(currentUser?.role === 'caregiver' || currentUser?.role === 'family') && (
-                              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                                Patient: {users.find(u => u.id === medication.patientId)?.name}
-                              </Typography>
-                            )}
-                          </>
-                        }
-                      />
-                      <Chip 
-                        size="small" 
-                        label="Missed" 
-                        color="error" 
-                        icon={<CancelIcon />} 
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
-            </CardContent>
-          </Card>
+            )}
+          </Paper>
         </Grid>
       </Grid>
     </Layout>

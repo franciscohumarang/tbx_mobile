@@ -6,7 +6,8 @@ import {
   TextField, 
   Button, 
   Paper,
-  Alert
+  Alert,
+  Link,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -95,11 +96,18 @@ const Login: React.FC = () => {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              color="primary"
+              size="large"
+              sx={{ py: 1.5 }}
               disabled={loading}
             >
-              Sign In
+              Login
             </Button>
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Link href="/dashboard/login" underline="hover">
+                TB Admin Login
+              </Link>
+            </Box>
           </Box>
         </Paper>
       </Box>
