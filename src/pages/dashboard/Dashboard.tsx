@@ -462,14 +462,7 @@ const Dashboard: React.FC = () => {
             <Typography variant="h4" sx={{ mb: { xs: 2, sm: 0 } }}>
               Patient Management
             </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-              onClick={() => setPatientFormOpen(true)}
-            >
-              Add New Patient
-            </Button>
+      
           </Box>
           <Typography variant="body1" color="text.secondary" paragraph>
             View and manage patient records, treatment plans, and adherence statistics.
