@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
- 
   Typography,
   Paper,
   Grid,
@@ -17,7 +16,13 @@ import {
   Avatar,
   LinearProgress,
   Chip,
-  Drawer
+  Drawer,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -28,13 +33,14 @@ import {
   Error as ErrorIcon,
   Add as AddIcon,
   ExitToApp as LogoutIcon,
-
   PieChart as PieChartIcon,
   BarChart as BarChartIcon,
-  Menu as MenuIcon
+  Menu as MenuIcon,
+  ReportProblem as ReportProblemIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import PatientForm from './PatientForm';
+import PatientADRView from './PatientADRView';
 import MedicationForm from './MedicationForm';
 
 // Mock data for the dashboard
@@ -126,6 +132,34 @@ const Dashboard: React.FC = () => {
   const [patients] = useState(patientData);
   const [medications] = useState(medicationData);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  
+  // Add state for ADR view
+  const [adrViewOpen, setAdrViewOpen] = useState(false);
+  const [selectedReaction, setSelectedReaction] = useState<any>(null);
+  
+  // Add state for tracking submitted adverse reactions
+  const [submittedReactions] = useState<any[]>([
+    {
+      patientId: '1',
+      patientName: 'Juan Dela Cruz',
+      date: '2024-02-10',
+      reaction: 'Jaundice due to hepatitis',
+      drugs: 'Isoniazid, Rifampicin',
+      management: 'Stopped anti-TB drugs, referred to specialist',
+      status: 'Resolved',
+      isEmergency: true
+    },
+    {
+      patientId: '3',
+      patientName: 'Alice Smith',
+      date: '2024-01-25',
+      reaction: 'Visual impairment due to optic neuritis',
+      drugs: 'Ethambutol',
+      management: 'Stopped Ethambutol, referred to ophthalmologist',
+      status: 'Ongoing monitoring',
+      isEmergency: false
+    }
+  ]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -200,6 +234,23 @@ const Dashboard: React.FC = () => {
             </Avatar>
           </ListItemAvatar>
           <ListItemText primary="Medications" />
+        </ListItem>
+        <ListItem 
+          sx={{ 
+            cursor: 'pointer',
+            bgcolor: tabValue === 3 ? 'rgba(255,255,255,0.1)' : 'transparent'
+          }}
+          onClick={() => {
+            setTabValue(3);
+            if (mobileOpen) setMobileOpen(false);
+          }}
+        >
+          <ListItemAvatar>
+            <Avatar sx={{ bgcolor: 'transparent' }}>
+              <ReportProblemIcon />
+            </Avatar>
+          </ListItemAvatar>
+          <ListItemText primary="Adverse Reactions" />
         </ListItem>
       </List>
       <Box sx={{ mt: 'auto', p: 2 }}>
@@ -462,11 +513,12 @@ const Dashboard: React.FC = () => {
             <Typography variant="h4" sx={{ mb: { xs: 2, sm: 0 } }}>
               Patient Management
             </Typography>
-      
           </Box>
           <Typography variant="body1" color="text.secondary" paragraph>
             View and manage patient records, treatment plans, and adherence statistics.
           </Typography>
+
+       
 
           <Grid container spacing={3} sx={{ mx: 0, width: '100%' }}>
             {patients.map((patient) => (
@@ -730,16 +782,352 @@ const Dashboard: React.FC = () => {
             </Box>
           </Paper>
         </TabPanel>
+
+        {/* Adverse Reactions Tab */}
+        <TabPanel value={tabValue} index={3}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 3, flexDirection: { xs: 'column', sm: 'row' } }}>
+            <Typography variant="h4" sx={{ mb: { xs: 2, sm: 0 } }}>
+              Adverse Reactions Summary
+            </Typography>
+            <Chip 
+              label={`${submittedReactions.length} Total Reports`} 
+              color="primary" 
+              variant="outlined" 
+              sx={{ fontSize: '1rem', py: 0.5, px: 1 }}
+            />
+          </Box>
+          <Typography variant="body1" color="text.secondary" paragraph>
+            Overview of adverse drug reactions reported by patients. Click on a patient to view full details.
+          </Typography>
+
+          <Paper sx={{ mb: 4 }}>
+            <Box sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                <WarningIcon color="error" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                Emergency Alerts
+              </Typography>
+              <Typography variant="body2" color="text.secondary" paragraph>
+                High-priority adverse reactions requiring immediate attention.
+              </Typography>
+              
+              {submittedReactions.filter(r => r.isEmergency).length > 0 ? (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell><strong>Patient</strong></TableCell>
+                        <TableCell><strong>Date</strong></TableCell>
+                        <TableCell><strong>Reaction</strong></TableCell>
+                        <TableCell><strong>Drugs</strong></TableCell>
+                        <TableCell><strong>Status</strong></TableCell>
+                        <TableCell><strong>Actions</strong></TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {submittedReactions
+                        .filter(r => r.isEmergency)
+                        .map((reaction, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{reaction.patientName}</TableCell>
+                            <TableCell>{reaction.date}</TableCell>
+                            <TableCell>{reaction.reaction}</TableCell>
+                            <TableCell>{reaction.drugs}</TableCell>
+                            <TableCell>
+                              <Chip 
+                                label={reaction.status} 
+                                color={reaction.status === 'Resolved' ? "success" : "error"} 
+                                size="small" 
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Button 
+                                size="small" 
+                                variant="contained"
+                                color="primary"
+                                onClick={() => {
+                                  // Find the patient by ID
+                                  const patient = patients.find(p => p.id === reaction.patientId);
+                                  if (patient) {
+                                    // Create patient data object for the form
+                                    const patientData = {
+                                      basicInfo: {
+                                        surname: patient.name.split(' ')[1] || '',
+                                        givenName: patient.name.split(' ')[0] || '',
+                                        middleName: '',
+                                        nameExtension: '',
+                                        age: 45,
+                                        dateOfBirth: patient.startDate,
+                                        sex: 'M',
+                                        civilStatus: 'married',
+                                        philHealthNumber: '01-234567890-1',
+                                        address: {
+                                          municipality: 'Quezon City',
+                                          province: 'Metro Manila',
+                                          phoneNumber: '09123456789',
+                                          smsAvailable: true
+                                        }
+                                      },
+                                      healthConditions: {
+                                        hivStatus: 'no',
+                                        diabetes: 'no',
+                                        renalDisease: 'no',
+                                        maintenanceMedication: {
+                                          taking: 'no',
+                                          medications: ''
+                                        },
+                                        healthIssues: {
+                                          alcohol: { drinks: 'no', current: 'no' },
+                                          tobacco: { uses: 'no', current: 'no' },
+                                          illicitDrugs: { used: 'no', current: 'no' }
+                                        }
+                                      },
+                                      diagnosis: {
+                                        tbCaseNumber: patient.id,
+                                        diagnosisType: 'TB Disease',
+                                        dateOfDiagnosis: patient.startDate,
+                                        classification: 'Pulmonary',
+                                        confirmationType: 'Bacteriologically-confirmed',
+                                        treatmentType: patient.treatmentType,
+                                        location: 'Facility-based',
+                                        treatmentHistory: { prior: 'no', details: '' },
+                                        currentRegimen: 'HRZE Fixed-dose combination',
+                                        monitoring: {
+                                          startDate: patient.startDate,
+                                          supporterName: 'Treatment Supporter',
+                                          supporterContact: '09187654321',
+                                          dotStatus: 'Treatment Supporter Supervised'
+                                        }
+                                      },
+                                      adverseReactions: {
+                                        lastOccurrence: reaction.date,
+                                        reactions: [reaction.reaction],
+                                        emergencyAlerts: [{
+                                          date: reaction.date,
+                                          reaction: reaction.reaction,
+                                          drugs: reaction.drugs || 'Unknown',
+                                          management: reaction.management || 'Pending review',
+                                          status: reaction.status
+                                        }]
+                                      },
+                                      followUps: {
+                                        missedDose: {
+                                          enableAlerts: true,
+                                          lastMissed: '',
+                                          reason: ''
+                                        },
+                                        notifications: {
+                                          notifyPatient: true,
+                                          notifySupporter: true,
+                                          notifyTBPeople: false
+                                        },
+                                        visits: {
+                                          scheduledDate: patient.nextAppointment,
+                                          lastVisit: patient.startDate,
+                                          enableAlerts: true,
+                                          requestFollowUp: false
+                                        }
+                                      }
+                                    };
+                                    
+                                    // Set the selected patient and reaction, then open the ADR view
+                                    setSelectedPatient(patientData);
+                                    setSelectedReaction(reaction);
+                                    setAdrViewOpen(true);
+                                  } else {
+                                    alert("Patient information not found. Please try again.");
+                                  }
+                                }}
+                              >
+                                View Details
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography variant="body1" align="center" sx={{ py: 3 }}>
+                  No emergency alerts reported.
+                </Typography>
+              )}
+            </Box>
+          </Paper>
+
+          <Paper>
+            <Box sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                All Reported Reactions
+              </Typography>
+              <Typography variant="body2" color="text.secondary" paragraph>
+                Complete list of adverse reactions reported by patients.
+              </Typography>
+              
+              {submittedReactions.length > 0 ? (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell><strong>Patient</strong></TableCell>
+                        <TableCell><strong>Date</strong></TableCell>
+                        <TableCell><strong>Reaction</strong></TableCell>
+                        <TableCell><strong>Drugs</strong></TableCell>
+                        <TableCell><strong>Status</strong></TableCell>
+                        <TableCell><strong>Actions</strong></TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {submittedReactions.map((reaction, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{reaction.patientName}</TableCell>
+                          <TableCell>{reaction.date}</TableCell>
+                          <TableCell>{reaction.reaction}</TableCell>
+                          <TableCell>{reaction.drugs}</TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={reaction.status} 
+                              color={reaction.isEmergency ? "error" : 
+                                    reaction.status === 'Resolved' ? "success" : "warning"} 
+                              size="small" 
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Button 
+                              size="small" 
+                              variant="contained"
+                              color="primary"
+                              onClick={() => {
+                                // Find the patient by ID
+                                const patient = patients.find(p => p.id === reaction.patientId);
+                                if (patient) {
+                                  // Create patient data object for the form
+                                  const patientData = {
+                                    basicInfo: {
+                                      surname: patient.name.split(' ')[1] || '',
+                                      givenName: patient.name.split(' ')[0] || '',
+                                      middleName: '',
+                                      nameExtension: '',
+                                      age: 45,
+                                      dateOfBirth: patient.startDate,
+                                      sex: 'M',
+                                      civilStatus: 'married',
+                                      philHealthNumber: '01-234567890-1',
+                                      address: {
+                                        municipality: 'Quezon City',
+                                        province: 'Metro Manila',
+                                        phoneNumber: '09123456789',
+                                        smsAvailable: true
+                                      }
+                                    },
+                                    healthConditions: {
+                                      hivStatus: 'no',
+                                      diabetes: 'no',
+                                      renalDisease: 'no',
+                                      maintenanceMedication: {
+                                        taking: 'no',
+                                        medications: ''
+                                      },
+                                      healthIssues: {
+                                        alcohol: { drinks: 'no', current: 'no' },
+                                        tobacco: { uses: 'no', current: 'no' },
+                                        illicitDrugs: { used: 'no', current: 'no' }
+                                      }
+                                    },
+                                    diagnosis: {
+                                      tbCaseNumber: patient.id,
+                                      diagnosisType: 'TB Disease',
+                                      dateOfDiagnosis: patient.startDate,
+                                      classification: 'Pulmonary',
+                                      confirmationType: 'Bacteriologically-confirmed',
+                                      treatmentType: patient.treatmentType,
+                                      location: 'Facility-based',
+                                      treatmentHistory: { prior: 'no', details: '' },
+                                      currentRegimen: 'HRZE Fixed-dose combination',
+                                      monitoring: {
+                                        startDate: patient.startDate,
+                                        supporterName: 'Treatment Supporter',
+                                        supporterContact: '09187654321',
+                                        dotStatus: 'Treatment Supporter Supervised'
+                                      }
+                                    },
+                                    adverseReactions: {
+                                      lastOccurrence: reaction.date,
+                                      reactions: [reaction.reaction],
+                                      emergencyAlerts: [{
+                                        date: reaction.date,
+                                        reaction: reaction.reaction,
+                                        drugs: reaction.drugs || 'Unknown',
+                                        management: reaction.management || 'Pending review',
+                                        status: reaction.status
+                                      }]
+                                    },
+                                    followUps: {
+                                      missedDose: {
+                                        enableAlerts: true,
+                                        lastMissed: '',
+                                        reason: ''
+                                      },
+                                      notifications: {
+                                        notifyPatient: true,
+                                        notifySupporter: true,
+                                        notifyTBPeople: false
+                                      },
+                                      visits: {
+                                        scheduledDate: patient.nextAppointment,
+                                        lastVisit: patient.startDate,
+                                        enableAlerts: true,
+                                        requestFollowUp: false
+                                      }
+                                    }
+                                  };
+                                  
+                                  // Set the selected patient and reaction, then open the ADR view
+                                  setSelectedPatient(patientData);
+                                  setSelectedReaction(reaction);
+                                  setAdrViewOpen(true);
+                                } else {
+                                  alert("Patient information not found. Please try again.");
+                                }
+                              }}
+                            >
+                              View Details
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography variant="body1" align="center" sx={{ py: 3 }}>
+                  No adverse reactions reported yet.
+                </Typography>
+              )}
+            </Box>
+          </Paper>
+        </TabPanel>
       </Box>
 
       {/* Forms */}
       <PatientForm 
         open={patientFormOpen} 
         onClose={() => {
+          console.log("Closing PatientForm");
           setPatientFormOpen(false);
           setSelectedPatient(null);
         }}
         patient={selectedPatient}
+      />
+      <PatientADRView
+        open={adrViewOpen}
+        onClose={() => {
+          console.log("Closing ADR View");
+          setAdrViewOpen(false);
+          setSelectedPatient(null);
+          setSelectedReaction(null);
+        }}
+        patient={selectedPatient}
+        reaction={selectedReaction}
       />
       <MedicationForm 
         open={medicationFormOpen} 

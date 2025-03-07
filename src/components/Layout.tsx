@@ -15,7 +15,8 @@ import {
   Home as HomeIcon, 
   Notifications as NotificationsIcon, 
   Person as PersonIcon,
-  ExitToApp as LogoutIcon
+  ExitToApp as LogoutIcon,
+  ReportProblem as ReportProblemIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -44,6 +45,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'TBX' }) => {
     if (path === '/') return 0;
     if (path === '/notifications') return 1;
     if (path === '/profile') return 2;
+    if (path === '/adr') return 3;
     return 0;
   };
 
@@ -120,6 +122,9 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'TBX' }) => {
                 case 2:
                   navigate('/profile');
                   break;
+                case 3:
+                  navigate('/adr');
+                  break;
                 default:
                   navigate('/');
               }
@@ -136,6 +141,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'TBX' }) => {
               } 
             />
             <BottomNavigationAction label="Profile" icon={<PersonIcon />} />
+            <BottomNavigationAction label="ADR" icon={<ReportProblemIcon />} />
           </BottomNavigation>
         </Paper>
       )}

@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
+import ADR from './pages/ADR';
 import NotificationTrigger from './pages/NotificationTrigger';
 import DashboardLogin from './pages/dashboard/Login';
 import Dashboard from './pages/dashboard/Dashboard';
@@ -196,6 +197,14 @@ const AppContent: React.FC = () => {
         element={
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/adr" 
+        element={
+          <ProtectedRoute>
+            <ADR />
           </ProtectedRoute>
         } 
       />

@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-
   Button,
   Stepper,
   Step,
@@ -23,8 +22,10 @@ import {
   FormGroup,
   Card,
   CardContent,
-  Divider
+  Divider,
+
 } from '@mui/material';
+
 
 // Mock patient data with Filipino context
 const mockPatientData = {
@@ -93,6 +94,22 @@ const mockPatientData = {
     reactions: [
       'Jaundice (Hepatitis)',
       'Visual impairment (Optic Neuritis)'
+    ],
+    emergencyAlerts: [
+      {
+        date: '2024-02-15',
+        reaction: 'Jaundice (Hepatitis)',
+        drugs: 'Metformin 500mg, Glimepiride 2mg',
+        management: 'Stop anti-TB drugs and refer to specialist',
+        status: 'Resolved'
+      },
+      {
+        date: '2024-02-20',
+        reaction: 'Visual impairment (Optic Neuritis)',
+        drugs: 'Metformin 500mg, Glimepiride 2mg',
+        management: 'Stop ethambutol and refer to ophthalmologist',
+        status: 'Resolved'
+      }
     ]
   },
   followUps: {
@@ -130,8 +147,17 @@ interface PatientFormProps {
   patient?: typeof mockPatientData;
 }
 
-const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mockPatientData }) => {
+const PatientForm: React.FC<PatientFormProps> = ({ 
+  open, 
+  onClose, 
+  patient = mockPatientData
+}) => {
   const [activeStep, setActiveStep] = React.useState(0);
+
+  // Add debugging
+  React.useEffect(() => {
+    console.log("PatientForm opened with patient data:", patient);
+  }, [open, patient]);
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -669,7 +695,7 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        <Typography variant="h5">Patient Details</Typography>
+        <Typography variant="h5">Patient Details: {patient?.basicInfo?.givenName} {patient?.basicInfo?.surname}</Typography>
       </DialogTitle>
       <DialogContent>
         <Box sx={{ width: '100%', mt: 2 }}>
@@ -683,6 +709,11 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
           
           <Box sx={{ mt: 4, mb: 2 }}>
             {patient && renderStepContent(activeStep)}
+            {!patient && (
+              <Typography variant="body1" align="center" color="error">
+                Patient data not available. Please try again.
+              </Typography>
+            )}
           </Box>
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2 }}>
