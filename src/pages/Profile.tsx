@@ -235,7 +235,7 @@ const Profile: React.FC = () => {
   const { currentUser } = useAuth();
   const { hasPermission, requestNotificationPermission } = useNotifications();
   const [activeStep, setActiveStep] = useState(0);
-  const [formData, setFormData] = useState(currentUser?.name ? patientData[currentUser.name as PatientNames] : null);
+  const [formData] = useState(currentUser?.name ? patientData[currentUser.name as PatientNames] : null);
 
   // Find patients for caregivers and family members
   const getPatients = () => {
