@@ -11,7 +11,6 @@ import {
   Link
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { LockOutlined } from '@mui/icons-material';
 
 const DashboardLogin: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -52,7 +51,16 @@ const DashboardLogin: React.FC = () => {
           }}
         >
           <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <LockOutlined sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
+            <Box 
+              component="img"
+              src="/logo192.png"
+              alt="TBX Logo"
+              sx={{ 
+                height: 80,
+                width: 80,
+                mb: 2
+              }}
+            />
             <Typography variant="h4" component="h1" gutterBottom>
               TB Admin Dashboard
             </Typography>

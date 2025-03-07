@@ -51,11 +51,31 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'TBX' }) => {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AppBar position="static" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
+          <Box 
+            component="img"
+            src="/tbx-title.png"
+            alt="TBX Logo"
+            sx={{ 
+              height: 40,
+              width: 40,
+              mr: 2
+              
+            }}
+            onClick={() => navigate('/')}
+          />
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
           {currentUser && (
-            <IconButton color="inherit" onClick={handleLogout}>
+            <IconButton 
+              onClick={handleLogout}
+              sx={{ 
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+            >
               <LogoutIcon />
             </IconButton>
           )}
