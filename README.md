@@ -1,4 +1,4 @@
-# TBX - Tuberculosis Medication Tracker
+# TBX - Tuberculosis Treatment Adherence Monitoring
 
 A Progressive Web App (PWA) for tracking tuberculosis medication intake and providing reminders to patients, caregivers, and family members.
 

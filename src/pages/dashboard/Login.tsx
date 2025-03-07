@@ -51,16 +51,7 @@ const DashboardLogin: React.FC = () => {
           }}
         >
           <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Box 
-              component="img"
-              src="/logo192.png"
-              alt="TBX Logo"
-              sx={{ 
-                height: 80,
-                width: 80,
-                mb: 2
-              }}
-            />
+          
             <Typography variant="h4" component="h1" gutterBottom>
               TB Admin Dashboard
             </Typography>

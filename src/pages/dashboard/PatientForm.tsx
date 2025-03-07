@@ -137,6 +137,7 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
     setActiveStep((prevStep) => prevStep + 1);
   };
 
+
   const handleBack = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
@@ -145,7 +146,7 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
   const renderStepContent = (step: number) => {
     switch (step) {
       case 0:
-        return (
+  return (
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Typography variant="h6" gutterBottom>Basic Information</Typography>
@@ -253,6 +254,12 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
                 InputProps={{ readOnly: true }}
               />
             </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControlLabel
+                control={<Checkbox checked={patient.basicInfo.address.smsAvailable} disabled />}
+                label="SMS Available"
+              />
+            </Grid>
           </Grid>
         );
 
@@ -319,6 +326,16 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
 
             <Grid item xs={12}>
               <Typography variant="subtitle1">Maintenance Medication</Typography>
+              <FormControl component="fieldset">
+                <Typography variant="body2">Are you currently taking medicines?</Typography>
+                <RadioGroup value={patient.healthConditions.maintenanceMedication.taking}>
+                  <FormControlLabel value="yes" control={<Radio disabled />} label="Yes" />
+                  <FormControlLabel value="no" control={<Radio disabled />} label="No" />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
               <TextField
                 fullWidth
                 multiline
@@ -334,19 +351,37 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <FormControl component="fieldset">
-                    <Typography variant="body2">Alcohol Consumption</Typography>
-                    <RadioGroup value={patient.healthConditions.healthIssues.alcohol.current}>
-                      <FormControlLabel value="yes" control={<Radio disabled />} label="Currently drinks" />
-                      <FormControlLabel value="no" control={<Radio disabled />} label="Does not drink" />
+                    <Typography variant="body2">Do you drink alcohol?</Typography>
+                    <RadioGroup value={patient.healthConditions.healthIssues.alcohol.drinks}>
+                      <FormControlLabel value="yes" control={<Radio disabled />} label="Yes" />
+                      <FormControlLabel value="no" control={<Radio disabled />} label="No" />
                     </RadioGroup>
                   </FormControl>
                 </Grid>
                 <Grid item xs={12}>
                   <FormControl component="fieldset">
-                    <Typography variant="body2">Tobacco Use</Typography>
+                    <Typography variant="body2">Do you still drink alcohol up to now?</Typography>
+                    <RadioGroup value={patient.healthConditions.healthIssues.alcohol.current}>
+                      <FormControlLabel value="yes" control={<Radio disabled />} label="Yes" />
+                      <FormControlLabel value="no" control={<Radio disabled />} label="No" />
+                    </RadioGroup>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControl component="fieldset">
+                    <Typography variant="body2">Do you use cigarette (tobacco)?</Typography>
+                    <RadioGroup value={patient.healthConditions.healthIssues.tobacco.uses}>
+                      <FormControlLabel value="yes" control={<Radio disabled />} label="Yes" />
+                      <FormControlLabel value="no" control={<Radio disabled />} label="No" />
+                    </RadioGroup>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControl component="fieldset">
+                    <Typography variant="body2">Do you use cigarette (tobacco) until now?</Typography>
                     <RadioGroup value={patient.healthConditions.healthIssues.tobacco.current}>
-                      <FormControlLabel value="yes" control={<Radio disabled />} label="Currently uses" />
-                      <FormControlLabel value="no" control={<Radio disabled />} label="Does not use" />
+                      <FormControlLabel value="yes" control={<Radio disabled />} label="Yes" />
+                      <FormControlLabel value="no" control={<Radio disabled />} label="No" />
                     </RadioGroup>
                   </FormControl>
                 </Grid>
@@ -398,6 +433,66 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
               />
             </Grid>
 
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="TB Confirmation Type"
+                value={patient.diagnosis.confirmationType}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                  label="Treatment Type"
+                value={patient.diagnosis.treatmentType}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Location of Treatment"
+                value={patient.diagnosis.location}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>Treatment History</Typography>
+              <FormControl component="fieldset">
+                <Typography variant="body2">Prior TB treatments?</Typography>
+                <RadioGroup value={patient.diagnosis.treatmentHistory.prior}>
+                  <FormControlLabel value="yes" control={<Radio disabled />} label="Yes" />
+                  <FormControlLabel value="no" control={<Radio disabled />} label="No" />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Previous Regimen Details"
+                value={patient.diagnosis.treatmentHistory.details}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Current Treatment Regimen"
+                value={patient.diagnosis.currentRegimen}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+
             <Grid item xs={12}>
               <Typography variant="subtitle1" gutterBottom>Treatment Monitoring</Typography>
             </Grid>
@@ -429,13 +524,11 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                multiline
-                rows={3}
-                label="Current Treatment Regimen"
-                value={patient.diagnosis.currentRegimen}
+                label="DOT Status"
+                value={patient.diagnosis.monitoring.dotStatus}
                 InputProps={{ readOnly: true }}
               />
             </Grid>
@@ -446,20 +539,20 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
         return (
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>Adverse Drug Reactions (ADR)</Typography>
+              <Typography variant="h6" gutterBottom>Adverse Drug Reactions (ADR) Reporting</Typography>
             </Grid>
 
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Date of Last ADR Occurrence"
+                label="Date of ADR Occurrence"
                 value={patient.adverseReactions.lastOccurrence}
                 InputProps={{ readOnly: true }}
               />
             </Grid>
 
             <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>Reported Reactions</Typography>
+              <Typography variant="subtitle1" gutterBottom>Common Major Adverse Reactions</Typography>
             </Grid>
 
             <Grid item xs={12}>
@@ -480,13 +573,20 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
         return (
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>Follow-ups & Monitoring</Typography>
+              <Typography variant="h6" gutterBottom>Missed Medication & Follow-ups</Typography>
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={<Checkbox checked={patient.followUps.missedDose.enableAlerts} disabled />}
+                label="Enable Missed Dose Alerts"
+              />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Last Missed Medication Date"
+                label="Date of Last Missed Medication"
                 value={patient.followUps.missedDose.lastMissed}
                 InputProps={{ readOnly: true }}
               />
@@ -502,17 +602,35 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
             </Grid>
 
             <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>Notification Settings</Typography>
+              <FormGroup>
+                <FormControlLabel
+                  control={<Checkbox checked={patient.followUps.notifications.notifyPatient} disabled />}
+                  label="Notify Patient (via App/SMS)"
+                />
+                <FormControlLabel
+                  control={<Checkbox checked={patient.followUps.notifications.notifySupporter} disabled />}
+                  label="Notify Treatment Supporter"
+                />
+                <FormControlLabel
+                  control={<Checkbox checked={patient.followUps.notifications.notifyTBPeople} disabled />}
+                  label="Notify TBPeople Philippines (for escalation)"
+                />
+              </FormGroup>
+            </Grid>
+
+            <Grid item xs={12}>
               <Divider sx={{ my: 2 }} />
             </Grid>
 
             <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>Healthcare Provider Visits</Typography>
+              <Typography variant="h6" gutterBottom>Healthcare Provider Visit Tracking</Typography>
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Next Scheduled Visit"
+                label="Scheduled Visit Date"
                 value={patient.followUps.visits.scheduledDate}
                 InputProps={{ readOnly: true }}
               />
@@ -524,6 +642,20 @@ const PatientForm: React.FC<PatientFormProps> = ({ open, onClose, patient = mock
                 label="Last Visit Date"
                 value={patient.followUps.visits.lastVisit}
                 InputProps={{ readOnly: true }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={<Checkbox checked={patient.followUps.visits.enableAlerts} disabled />}
+                label="Enable Missed Visit Alerts"
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={<Checkbox checked={patient.followUps.visits.requestFollowUp} disabled />}
+                label="Request Follow-up"
               />
             </Grid>
           </Grid>
