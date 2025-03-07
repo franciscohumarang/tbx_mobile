@@ -53,5 +53,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/workbox-core": "^4.3.1",
+    "@types/workbox-expiration": "^4.3.1",
+    "@types/workbox-precaching": "^4.3.1",
+    "@types/workbox-routing": "^4.3.1",
+    "@types/workbox-strategies": "^4.3.1"
   }
 }

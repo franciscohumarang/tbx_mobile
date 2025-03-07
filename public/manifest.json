@@ -20,8 +20,8 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#4caf50",
-  "background_color": "#ffffff",
+  "theme_color": "#0A192F",
+  "background_color": "#F8F9FA",
   "orientation": "portrait",
   "scope": "/",
   "description": "Medication reminders and tracking app for Tuberculosis patients"

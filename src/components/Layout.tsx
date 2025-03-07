@@ -49,7 +49,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'TBX' }) => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static">
+      <AppBar position="static" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {title}
@@ -62,12 +62,31 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'TBX' }) => {
         </Toolbar>
       </AppBar>
       
-      <Container component="main" sx={{ flexGrow: 1, py: 2 }}>
+      <Container 
+        component="main" 
+        sx={{ 
+          flexGrow: 1, 
+          py: 2,
+          pb: { xs: 10, sm: 10 },
+          position: 'relative',
+          zIndex: 1
+        }}
+      >
         {children}
       </Container>
       
       {currentUser && (
-        <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
+        <Paper 
+          sx={{ 
+            position: 'fixed', 
+            bottom: 0, 
+            left: 0, 
+            right: 0,
+            zIndex: (theme) => theme.zIndex.drawer + 2,
+            borderTop: '1px solid rgba(0, 0, 0, 0.12)'
+          }} 
+          elevation={3}
+        >
           <BottomNavigation
             value={getValue()}
             onChange={(_, newValue) => {

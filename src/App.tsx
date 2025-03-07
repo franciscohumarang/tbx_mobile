@@ -18,25 +18,142 @@ import './App.css';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#4caf50',
+      main: '#0a1c30', // Dark navy blue
+      light: '#2c3e50',
+      dark: '#050e17',
+      contrastText: '#fff'
     },
     secondary: {
-      main: '#ff9800',
+      main: '#64c0fa', // Light blue from logo
+      light: '#97d4fb',
+      dark: '#3193d4',
+      contrastText: '#0a1c30'
     },
     background: {
-      default: '#f5f5f5',
+      default: '#f8f9fa',
+      paper: '#ffffff'
     },
+    text: {
+      primary: '#0a1c30',
+      secondary: '#475569'
+    },
+    error: {
+      main: '#dc2626'
+    },
+    warning: {
+      main: '#f59e0b'
+    },
+    success: {
+      main: '#10b981'
+    },
+    info: {
+      main: '#64c0fa'
+    }
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h5: {
+      fontWeight: 600,
+      color: '#0a1c30'
+    },
+    h6: {
+      fontWeight: 600,
+      color: '#0a1c30'
+    },
+    body1: {
+      color: '#475569'
+    },
+    body2: {
+      color: '#475569'
+    }
   },
   components: {
     MuiAppBar: {
       defaultProps: {
-        color: 'primary',
+        color: 'primary'
       },
+      styleOverrides: {
+        root: {
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }
+      }
     },
-  },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#ffffff',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+          borderRadius: 8
+        }
+      }
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: 'none',
+          fontWeight: 500
+        },
+        contained: {
+          backgroundColor: '#64c0fa',
+          color: '#0a1c30',
+          '&:hover': {
+            backgroundColor: '#97d4fb',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }
+        },
+        outlined: {
+          borderColor: '#64c0fa',
+          color: '#0a1c30',
+          '&:hover': {
+            borderColor: '#97d4fb',
+            backgroundColor: 'rgba(100, 192, 250, 0.04)'
+          }
+        },
+        text: {
+          color: '#0a1c30',
+          '&:hover': {
+            backgroundColor: 'rgba(100, 192, 250, 0.04)'
+          }
+        }
+      }
+    },
+    MuiBottomNavigation: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#ffffff',
+          borderTop: '1px solid rgba(0,0,0,0.1)'
+        }
+      }
+    },
+    MuiBottomNavigationAction: {
+      styleOverrides: {
+        root: {
+          color: '#475569',
+          '&.Mui-selected': {
+            color: '#64c0fa'
+          }
+        }
+      }
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          color: '#0a1c30',
+          '&:hover': {
+            backgroundColor: 'rgba(100, 192, 250, 0.04)'
+          }
+        }
+      }
+    },
+    MuiListItemIcon: {
+      styleOverrides: {
+        root: {
+          color: '#64c0fa'
+        }
+      }
+    }
+  }
 });
 
 // Protected route component
