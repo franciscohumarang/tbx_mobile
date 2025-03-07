@@ -60,9 +60,9 @@ This page offers two ways to send test notifications:
 ### 1. Quick Test Notifications
 
 Pre-configured sample medications that can be triggered with a single click:
-- **Morning Rifampicin**: Reminder for John Doe's morning medication
-- **Noon Pyrazinamide**: Reminder for John Doe's noon medication
-- **Missed Medication**: Alert for John Doe's missed medication
+- **Morning Rifampicin**: Reminder for Juan Dela Cruz's morning medication
+- **Noon Pyrazinamide**: Reminder for Juan Dela Cruz's noon medication
+- **Missed Medication**: Alert for Juan Dela Cruz's missed medication
 - **Patient 2 Medication**: Reminder for Michael Smith's medication
 
 After sending notifications, you can:

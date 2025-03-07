@@ -28,7 +28,7 @@ import {
   Error as ErrorIcon,
   Add as AddIcon,
   ExitToApp as LogoutIcon,
-  AdminPanelSettings as AdminPanelSettingsIcon,
+
   PieChart as PieChartIcon,
   BarChart as BarChartIcon,
   Menu as MenuIcon
@@ -54,7 +54,7 @@ export const treatmentTypes = [
 const patientData = [
   { 
     id: '1', 
-    name: 'John Doe', 
+    name: 'Juan Dela Cruz', 
     treatmentType: 'A',
     adherenceRate: 85,
     missedDoses: 3,
@@ -123,8 +123,9 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [patientFormOpen, setPatientFormOpen] = useState(false);
   const [medicationFormOpen, setMedicationFormOpen] = useState(false);
-  const [patients, setPatients] = useState(patientData);
-  const [medications, setMedications] = useState(medicationData);
+  const [patients] = useState(patientData);
+  const [medications] = useState(medicationData);
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -134,21 +135,18 @@ const Dashboard: React.FC = () => {
     navigate('/dashboard/login');
   };
 
-  const handleAddPatient = (newPatient: any) => {
-    setPatients([...patients, newPatient]);
-  };
+  
 
-  const handleAddMedication = (newMedication: any) => {
-    setMedications([...medications, newMedication]);
-  };
-
+  
   const drawer = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <AdminPanelSettingsIcon sx={{ mr: 1 }} />
-        <Typography variant="h6" component="div">
-          TB Admin Panel
-        </Typography>
+        <Box
+          component="img"
+          src="/tbx-title.png"
+          alt="TBX Logo"
+          sx={{ height: 40, width: 'auto', mr: 1 }}
+        />
       </Box>
       <Divider sx={{ bgcolor: 'rgba(255,255,255,0.2)' }} />
       <List>
@@ -209,6 +207,7 @@ const Dashboard: React.FC = () => {
           fullWidth
           variant="outlined"
           color="inherit"
+          sx={{ color: 'white', borderColor: 'white' }}
           startIcon={<LogoutIcon />}
           onClick={handleLogout}
         >
@@ -238,15 +237,17 @@ const Dashboard: React.FC = () => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
           <Button
-            color="inherit"
+            sx={{ mr: 2, color: 'white' }}
             onClick={handleDrawerToggle}
-            sx={{ mr: 2 }}
           >
-            <MenuIcon />
+            <MenuIcon sx={{ color: 'white' }} />
           </Button>
-          <Typography variant="h6" component="div">
-            TB Admin Panel
-          </Typography>
+          <Box
+            component="img"
+            src="/tbx-title.png"
+            alt="TBX Logo"
+            sx={{ height: 32, width: 'auto' }}
+          />
         </Box>
       </Box>
 
@@ -561,7 +562,85 @@ const Dashboard: React.FC = () => {
                     <Typography variant="body2" color="text.secondary" sx={{ mb: { xs: 1, sm: 0 } }}>
                       Next Appointment: <strong>{patient.nextAppointment}</strong>
                     </Typography>
-                    <Button variant="outlined" size="small">
+                    <Button 
+                      variant="outlined" 
+                      size="small"
+                      onClick={() => {
+                        setSelectedPatient({
+                          basicInfo: {
+                            surname: patient.name.split(' ')[1],
+                            givenName: patient.name.split(' ')[0],
+                            middleName: '',
+                            nameExtension: '',
+                            age: 45,
+                            dateOfBirth: patient.startDate,
+                            sex: 'M',
+                            civilStatus: 'married',
+                            philHealthNumber: '01-234567890-1',
+                            address: {
+                              municipality: 'Quezon City',
+                              province: 'Metro Manila',
+                              phoneNumber: '09123456789',
+                              smsAvailable: true
+                            }
+                          },
+                          healthConditions: {
+                            hivStatus: 'no',
+                            diabetes: 'no',
+                            renalDisease: 'no',
+                            maintenanceMedication: {
+                              taking: 'no',
+                              medications: ''
+                            },
+                            healthIssues: {
+                              alcohol: { drinks: 'no', current: 'no' },
+                              tobacco: { uses: 'no', current: 'no' },
+                              illicitDrugs: { used: 'no', current: 'no' }
+                            }
+                          },
+                          diagnosis: {
+                            tbCaseNumber: patient.id,
+                            diagnosisType: 'TB Disease',
+                            dateOfDiagnosis: patient.startDate,
+                            classification: 'Pulmonary',
+                            confirmationType: 'Bacteriologically-confirmed',
+                            treatmentType: patient.treatmentType,
+                            location: 'Facility-based',
+                            treatmentHistory: { prior: 'no', details: '' },
+                            currentRegimen: 'HRZE Fixed-dose combination',
+                            monitoring: {
+                              startDate: patient.startDate,
+                              supporterName: 'Treatment Supporter',
+                              supporterContact: '09187654321',
+                              dotStatus: 'Treatment Supporter Supervised'
+                            }
+                          },
+                          adverseReactions: {
+                            lastOccurrence: '',
+                            reactions: []
+                          },
+                          followUps: {
+                            missedDose: {
+                              enableAlerts: true,
+                              lastMissed: '',
+                              reason: ''
+                            },
+                            notifications: {
+                              notifyPatient: true,
+                              notifySupporter: true,
+                              notifyTBPeople: false
+                            },
+                            visits: {
+                              scheduledDate: patient.nextAppointment,
+                              lastVisit: patient.startDate,
+                              enableAlerts: true,
+                              requestFollowUp: false
+                            }
+                          }
+                        });
+                        setPatientFormOpen(true);
+                      }}
+                    >
                       View Details
                     </Button>
                   </Box>
@@ -663,13 +742,15 @@ const Dashboard: React.FC = () => {
       {/* Forms */}
       <PatientForm 
         open={patientFormOpen} 
-        onClose={() => setPatientFormOpen(false)} 
-        onSubmit={handleAddPatient} 
+        onClose={() => {
+          setPatientFormOpen(false);
+          setSelectedPatient(null);
+        }}
+        patient={selectedPatient}
       />
       <MedicationForm 
         open={medicationFormOpen} 
         onClose={() => setMedicationFormOpen(false)} 
-        onSubmit={handleAddMedication} 
       />
     </Box>
   );

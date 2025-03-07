@@ -6,7 +6,7 @@ export const users: User[] = [
     id: '1',
     username: 'patient1',
     password: 'password123',
-    name: 'John Doe',
+    name: 'Juan Dela Cruz',
     role: 'patient',
   },
   {

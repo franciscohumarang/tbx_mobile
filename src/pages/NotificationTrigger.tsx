@@ -36,19 +36,19 @@ import { Medication } from '../types';
 const sampleMedications = [
   {
     label: "Morning Rifampicin",
-    patientId: "1", // John Doe
+    patientId: "1", // Juan Dela Cruz
     medicationId: "1", // Rifampicin 600mg
     type: "reminder" as const
   },
   {
     label: "Noon Pyrazinamide",
-    patientId: "1", // John Doe
+    patientId: "1", // Juan Dela Cruz
     medicationId: "3", // Pyrazinamide 1600mg
     type: "reminder" as const
   },
   {
     label: "Missed Medication",
-    patientId: "1", // John Doe
+    patientId: "1", // Juan Dela Cruz
     medicationId: "5", // Rifampicin 600mg (missed)
     type: "missed" as const
   },

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Typography,
@@ -12,117 +12,78 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-  SelectChangeEvent
+  DialogActions
 } from '@mui/material';
 
 interface MedicationFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (medicationData: any) => void;
 }
 
-const MedicationForm: React.FC<MedicationFormProps> = ({ open, onClose, onSubmit }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    dosage: '',
-    frequency: 'Daily',
-    time: '08:00'
-  });
+const mockMedicationData = {
+  name: 'Rifampicin',
+  dosage: '600mg',
+  frequency: 'Daily',
+  time: '08:00',
+  patients: 15
+};
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
-
-  const handleSelectChange = (e: SelectChangeEvent) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      ...formData,
-      id: Date.now().toString(),
-      patients: 0
-    });
-    onClose();
-  };
-
+const MedicationForm: React.FC<MedicationFormProps> = ({ open, onClose }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        <Typography variant="h5">Add New Medication</Typography>
+        <Typography variant="h5">Medication Details</Typography>
       </DialogTitle>
       <DialogContent>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+        <Box sx={{ mt: 2 }}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <TextField
-                name="name"
                 label="Medication Name"
-                value={formData.name}
-                onChange={handleTextChange}
+                value={mockMedicationData.name}
                 fullWidth
-                required
+                InputProps={{ readOnly: true }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                name="dosage"
                 label="Dosage"
-                value={formData.dosage}
-                onChange={handleTextChange}
+                value={mockMedicationData.dosage}
                 fullWidth
-                required
-                placeholder="e.g. 500mg"
+                InputProps={{ readOnly: true }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
-                <InputLabel id="frequency-label">Frequency</InputLabel>
-                <Select
-                  labelId="frequency-label"
-                  name="frequency"
-                  value={formData.frequency}
-                  onChange={handleSelectChange}
-                  label="Frequency"
-                >
-                  <MenuItem value="Daily">Daily</MenuItem>
-                  <MenuItem value="Twice Daily">Twice Daily</MenuItem>
-                  <MenuItem value="Weekly">Weekly</MenuItem>
-                  <MenuItem value="Monthly">Monthly</MenuItem>
+              <FormControl fullWidth>
+                <InputLabel>Frequency</InputLabel>
+                <Select value={mockMedicationData.frequency} readOnly>
+                  <MenuItem value={mockMedicationData.frequency}>{mockMedicationData.frequency}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
             <Grid item xs={12}>
               <TextField
-                name="time"
                 label="Time"
                 type="time"
-                value={formData.time}
-                onChange={handleTextChange}
+                value={mockMedicationData.time}
                 fullWidth
-                required
-                InputLabelProps={{ shrink: true }}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Patients Prescribed"
+                value={mockMedicationData.patients}
+                fullWidth
+                InputProps={{ readOnly: true }}
               />
             </Grid>
           </Grid>
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="inherit">
-          Cancel
-        </Button>
-        <Button onClick={handleSubmit} variant="contained" color="primary">
-          Add Medication
+        <Button onClick={onClose} color="primary" variant="contained">
+          Close
         </Button>
       </DialogActions>
     </Dialog>
