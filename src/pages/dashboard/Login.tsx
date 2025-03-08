@@ -55,7 +55,7 @@ const DashboardLogin: React.FC = () => {
             <Typography variant="h4" component="h1" gutterBottom>
               TB Admin Dashboard
             </Typography>
-            <Typography variant="body1" color="text.secondary">
+            <Typography align="center" variant="body1" color="text.secondary">
               Login to access the TB administration panel
             </Typography>
           </Box>

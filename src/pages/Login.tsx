@@ -61,7 +61,7 @@ const Login: React.FC = () => {
         <Typography component="h1" variant="h4" sx={{ mb: 2 }}>
           TBX Mobile
         </Typography>
-        <Typography component="h2" variant="h6" sx={{ mb: 4, color: 'text.secondary' }}>
+        <Typography align="center" component="h2" variant="h6" sx={{ mb: 4, color: 'text.secondary' }}>
           Tuberculosis Treatment Adherence Monitoring
         </Typography>
         

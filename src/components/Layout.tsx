@@ -65,8 +65,15 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'TBX' }) => {
             }}
             onClick={() => navigate('/')}
           />
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            {title}
+          <Typography 
+            variant="h6" 
+            component="div" 
+            sx={{ 
+              flexGrow: 1,
+              color: 'white'
+            }}
+          >
+            {title} 
           </Typography>
           {currentUser && (
             <IconButton 
